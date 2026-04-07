@@ -18,6 +18,7 @@ def load_data():
     data['Report DateTime'] = pd.to_datetime(data['Report DateTime'])
     data['Year'] = data['Report DateTime'].dt.year
     return data
+df = load_data()
 
 # 3. Sidebar Controls
 st.sidebar.header("Filter Controls")
