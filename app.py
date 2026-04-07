@@ -12,11 +12,12 @@ st.markdown("This dashboard focuses on recent crime patterns in Seattle (2025-20
 @st.cache_data
 def load_data():
     data = pd.read_csv('seattle_crime_small.csv')
+
+    data.columns = data.columns.str.strip() 
+    
     data['Report DateTime'] = pd.to_datetime(data['Report DateTime'])
     data['Year'] = data['Report DateTime'].dt.year
     return data
-
-df = load_data()
 
 # 3. Sidebar Controls
 st.sidebar.header("Filter Controls")
