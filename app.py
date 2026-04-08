@@ -11,37 +11,25 @@ st.markdown("This dashboard focuses on recent crime patterns in Seattle (2025-20
 # 2. Load Data
 @st.cache_data
 def load_data():
-    # 读取文件
     data = pd.read_csv('seattle_crime_small.csv')
-    
-    # 【核心修复 1】强制清理所有列名的空格，防止 KeyError
+    # 清理列名空格
     data.columns = data.columns.str.strip() 
-    
-    # 转换时间
-    data['Report DateTime'] = pd.to_datetime(data['Report DateTime'])
-    data['Year'] = data['Report DateTime'].dt.year
+    # 转换时间列 (对应你 CSV 里的 REPORT_DATETIME)
+    data['REPORT_DATETIME'] = pd.to_datetime(data['REPORT_DATETIME'])
+    data['Year'] = data['REPORT_DATETIME'].dt.year
     return data
 
-# 【核心修复 2】在函数外部执行，确保变量 df 被定义
 df = load_data()
-
-# --- 调试工具：如果在网页看到这行，请告诉我括号里具体显示了什么 ---
-# st.write("Current Columns:", df.columns.tolist())
 
 # 3. Sidebar Controls
 st.sidebar.header("Filter Controls")
 
-# Year Slider
+# 年份选择
 years = sorted(df['Year'].unique())
-selected_year = st.sidebar.select_slider(
-    "Select Year", 
-    options=years, 
-    value=max(years)
-)
+selected_year = st.sidebar.select_slider("Select Year", options=years, value=max(years))
 
-# 【核心修复 3】使用更健壮的方式获取犯罪类型列
-# 如果列名不对，这里会报错，请根据调试工具显示的名称修改
-target_col = 'Offense Parent Group' 
+# 【关键点】犯罪类别列名改为 OFFENSE_CATEGORY
+target_col = 'OFFENSE_CATEGORY' 
 
 crime_options = sorted(df[target_col].unique())
 selected_crimes = st.sidebar.multiselect(
@@ -68,6 +56,7 @@ col_left, col_right = st.columns([1, 1])
 with col_left:
     st.subheader("Incident Frequency")
     counts = filtered_df[target_col].value_counts().reset_index()
+    # 注意：plotly 的 x 和 y 也要对应新列名
     fig_bar = px.bar(
         counts, x=target_col, y='count', color=target_col,
         template="plotly_white"
@@ -76,13 +65,19 @@ with col_left:
 
 with col_right:
     st.subheader("Geographical Distribution")
+    # 【关键点】坐标列名改为 LATITUDE 和 LONGITUDE
     fig_map = px.scatter_mapbox(
-        filtered_df, lat="Latitude", lon="Longitude",
-        color=target_col, hover_name="Offense", 
-        mapbox_style="carto-positron", zoom=10
+        filtered_df, 
+        lat="LATITUDE", 
+        lon="LONGITUDE",
+        color=target_col, 
+        hover_name="OFFENSE", 
+        mapbox_style="carto-positron", 
+        zoom=10,
+        height=500
     )
     st.plotly_chart(fig_map, use_container_width=True)
 
 # 7. Raw Data Table
 with st.expander("View Filtered Raw Data"):
-    st.dataframe(filtered_df.sort_values('Report DateTime', ascending=False))
+    st.dataframe(filtered_df.sort_values('REPORT_DATETIME', ascending=False))
