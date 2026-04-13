@@ -61,7 +61,7 @@ filtered_df = df[
 
 # Question
 st.subheader("Question")
-st.write("What recent crime patterns can be observed across different areas of Seattle since 2025?")
+st.write("What recent spatial and temporal crime patterns can be observed across Seattle since 2025?")
 
 # Map
 st.subheader("Crime Map")
@@ -82,7 +82,7 @@ fig_map = px.scatter_mapbox(
     title=f"Seattle Crime Map - {selected_type}"
 )
 
-fig_map.update_traces(marker={"size": 5})
+fig_map.update_traces(marker={"size": 5, "opacity": 0.5})
 fig_map.update_layout(
     mapbox_style="carto-positron",
     margin=dict(l=0, r=0, t=50, b=0)
@@ -96,6 +96,7 @@ col1, col2 = st.columns(2)
 # Trend
 with col1:
     st.subheader("Trend Over Time (Monthly)")
+    st.caption("Note: 2026 data is partial, so later months may appear lower.")
 
     # 提取年月
     filtered_df["YearMonth"] = filtered_df["Offense Date"].dt.to_period("M").astype(str)
@@ -167,6 +168,6 @@ st.write("Seattle Open Data: SPD Crime Data (2008–Present), using a subset fro
 
 st.subheader("Development Reflection")
 st.write(
-    "This project took approximately ___ hours to complete. "
+    "This project took approximately 8 hours to complete. "
     "The most time-consuming part was cleaning the dataset and preparing a focused subset for interactive visualization."
 )
