@@ -3,11 +3,11 @@ import plotly.express as px
 import streamlit as st
 
 st.set_page_config(
-    page_title="Seattle Crime Interactive Visualization",
+    page_title="Recent Seattle Crime Patterns Since 2025",
     layout="wide"
 )
 
-st.title("Seattle Crime Interactive Visualization Since 2025")
+st.title("Recent Seattle Crime Patterns Since 2025")
 
 # 读取数据
 df = pd.read_csv("seattle_crime_small.csv", low_memory=False)
@@ -32,11 +32,10 @@ df["Longitude"] = pd.to_numeric(df["Longitude"], errors="coerce")
 
 df = df.dropna(subset=["Offense Date", "Offense Category", "Latitude", "Longitude"])
 
-# 提取年份
 df["Year"] = df["Offense Date"].dt.year
 
-# 只保留合理年份（与你现在的数据一致）
-df = df[(df["Year"] >= 2025) & (df["Year"] <= 2026)]
+# 只保留合理年份，和当前项目主题一致
+df = df[df["Year"] >= 2025].copy()
 
 # 侧边栏筛选
 st.sidebar.header("Filters")
@@ -58,11 +57,11 @@ filtered_df = df[
     (df["Offense Category"] == selected_type) &
     (df["Year"] >= selected_years[0]) &
     (df["Year"] <= selected_years[1])
-]
+].copy()
 
 # Question
 st.subheader("Question")
-st.write("How do crime patterns vary across different areas of Seattle since 2025?")
+st.write("What recent crime patterns can be observed across different areas of Seattle since 2025?")
 
 # Map
 st.subheader("Crime Map")
@@ -80,8 +79,7 @@ fig_map = px.scatter_mapbox(
         "Longitude": False
     },
     zoom=10,
-    title=f"Seattle Crime Map - {selected_type}",
-    height=500
+    title=f"Seattle Crime Map - {selected_type}"
 )
 
 fig_map.update_traces(marker={"size": 5})
@@ -110,13 +108,17 @@ with col1:
         x="Year",
         y="Count",
         markers=True,
-        title=f"Trend of {selected_type} Since 2025"
+        title=f"Trend of {selected_type} Over Time"
     )
 
-    fig_line.update_layout(margin=dict(l=0, r=0, t=50, b=0))
+    fig_line.update_layout(
+        xaxis=dict(dtick=1),
+        margin=dict(l=0, r=0, t=50, b=0)
+    )
+
     st.plotly_chart(fig_line, use_container_width=True)
 
-# Top Crime Types
+# Top crimes
 with col2:
     st.subheader("Top Crime Types")
 
@@ -135,4 +137,32 @@ with col2:
     fig_bar = px.bar(
         top_crime_df,
         x="Crime",
-       
+        y="Count",
+        title="Top 10 Crime Types in the Selected Time Range"
+    )
+
+    fig_bar.update_layout(
+        xaxis_tickangle=-35,
+        margin=dict(l=0, r=0, t=50, b=0)
+    )
+
+    st.plotly_chart(fig_bar, use_container_width=True)
+
+# Write-up
+st.subheader("Design Rationale")
+st.write(
+    "This project focuses on recent crime data since 2025 rather than the full historical dataset. "
+    "A smaller and more recent subset was selected to keep the web application responsive and to highlight current spatial and temporal patterns. "
+    "A map was used to show the geographic distribution of crimes because location is one of the most important aspects of this dataset. "
+    "Interactive filters allow users to explore different crime categories and year ranges. "
+    "A line chart shows how crime counts change over time, and a bar chart summarizes the most common offense categories in the selected time range."
+)
+
+st.subheader("Data Source")
+st.write("Seattle Open Data: SPD Crime Data (2008–Present), using a subset from 2025 onward for this project.")
+
+st.subheader("Development Reflection")
+st.write(
+    "This project took approximately ___ hours to complete. "
+    "The most time-consuming part was cleaning the dataset and preparing a focused subset for interactive visualization."
+)
