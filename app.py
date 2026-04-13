@@ -95,24 +95,28 @@ col1, col2 = st.columns(2)
 
 # Trend
 with col1:
-    st.subheader("Trend Over Time")
+    st.subheader("Trend Over Time (Monthly)")
+
+    # 提取年月
+    filtered_df["YearMonth"] = filtered_df["Offense Date"].dt.to_period("M").astype(str)
 
     trend_df = (
-        filtered_df.groupby("Year")
+        filtered_df.groupby("YearMonth")
         .size()
         .reset_index(name="Count")
     )
 
     fig_line = px.line(
         trend_df,
-        x="Year",
+        x="YearMonth",
         y="Count",
         markers=True,
-        title=f"Trend of {selected_type} Over Time"
+        title=f"Monthly Trend of {selected_type}"
     )
 
     fig_line.update_layout(
-        xaxis=dict(dtick=1),
+        xaxis_title="Month",
+        yaxis_title="Crime Count",
         margin=dict(l=0, r=0, t=50, b=0)
     )
 
